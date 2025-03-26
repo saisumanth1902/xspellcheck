@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
-  // State for the text entered in the textarea
   const [text, setText] = useState('');
-  // State for the correction suggestion
   const [suggestion, setSuggestion] = useState('');
 
-  // Custom dictionary for spell-checking
   const customDictionary = {
     teh: 'the',
     wrok: 'work',
@@ -15,36 +12,25 @@ function App() {
     exampl: 'example',
   };
 
-  // Memoize the checkSpelling function to prevent re-creation on every render
-  const checkSpelling = useCallback((inputText) => {
-    if (!inputText.trim()) {
-      setSuggestion(''); // Clear suggestion if textarea is empty
+  useEffect(() => {
+    if (!text.trim()) {
+      setSuggestion('');
       return;
     }
 
-    // Split the input text into words
-    const words = inputText.split(/\s+/);
-
-    // Check each word against the dictionary (case-insensitive)
+    const words = text.split(/\s+/);
     for (let word of words) {
       const lowerWord = word.toLowerCase();
       if (customDictionary.hasOwnProperty(lowerWord)) {
         const correctedWord = customDictionary[lowerWord];
         setSuggestion(`Did you mean: ${correctedWord}?`);
-        return; // Stop after finding the first misspelling
+        return;
       }
     }
 
-    // If no misspellings are found, clear the suggestion
     setSuggestion('');
-  }, [setSuggestion]); // Dependency: setSuggestion (stable, provided by React)
+  }, [text]); // Only depends on text
 
-  // Use useEffect to check spelling whenever the text changes
-  useEffect(() => {
-    checkSpelling(text);
-  }, [text, checkSpelling]); // Include checkSpelling in the dependency array
-
-  // Handle text change in the textarea
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
