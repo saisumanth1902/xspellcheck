@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 function App() {
@@ -12,24 +12,31 @@ function App() {
     exampl: 'example',
   };
 
-  useEffect(() => {
-    if (!text.trim()) {
-      setSuggestion('');
-      return;
-    }
-
-    const words = text.split(/\s+/);
-    for (let word of words) {
-      const lowerWord = word.toLowerCase();
-      if (customDictionary.hasOwnProperty(lowerWord)) {
-        const correctedWord = customDictionary[lowerWord];
-        setSuggestion(`Did you mean: ${correctedWord}?`);
+  const checkSpelling = useCallback(
+    (inputText) => {
+      if (!inputText.trim()) {
+        setSuggestion('');
         return;
       }
-    }
 
-    setSuggestion('');
-  }, [text]); // Only depends on text
+      const words = inputText.split(/\s+/);
+      for (let word of words) {
+        const lowerWord = word.toLowerCase();
+        if (customDictionary.hasOwnProperty(lowerWord)) {
+          const correctedWord = customDictionary[lowerWord];
+          setSuggestion(`Did you mean: ${correctedWord}?`);
+          return;
+        }
+      }
+
+      setSuggestion('');
+    },
+    [setSuggestion] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  useEffect(() => {
+    checkSpelling(text);
+  }, [text, checkSpelling]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
